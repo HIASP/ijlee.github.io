@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "space grotesk",
+        "createdAt": "2026-11-20T08:45:33.424Z",
+        "reason": "pre-existing design decision (predates this session): Space Grotesk is used only for --font-display headings, as one part of a deliberate 3-face type system (display/body/mono), not a default single-font choice"
+      }
+    ]
+  }
+}

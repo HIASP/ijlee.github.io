@@ -4,3 +4,6 @@ Thumbs.db
 
 # raw screenshots — may contain internal IPs/system names, repo is public
 img_src/
+
+# impeccable: per-session runtime cache, not project state
+.impeccable/hook.cache.json
