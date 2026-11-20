@@ -1,3 +1,6 @@
 .DS_Store
 Thumbs.db
 *.log
+
+# raw screenshots — may contain internal IPs/system names, repo is public
+img_src/

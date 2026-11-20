@@ -22,23 +22,21 @@
 <main class="admin-main">
 
   <section class="admin-card" id="settings-card">
-    <h2>GitLab 연결 설정</h2>
+    <h2>GitHub 연결 설정</h2>
     <p class="admin-hint">
       이 설정은 이 브라우저에만 저장됩니다(서버로 전송되지 않음). Personal Access Token은
-      <code>api</code> 또는 <code>write_repository</code> 스코프가 있어야 커밋이 가능합니다.
+      이 저장소에 대해 <code>Contents: Read and write</code> 권한(fine-grained) 또는
+      <code>repo</code> 스코프(classic)가 있어야 커밋이 가능합니다.
     </p>
     <div class="admin-grid">
-      <label>GitLab 주소
-        <input id="set-base" type="text" placeholder="https://gitlab.com">
-      </label>
-      <label>프로젝트 경로
-        <input id="set-project" type="text" placeholder="namespace/project-name">
+      <label>저장소 (owner/repo)
+        <input id="set-project" type="text" placeholder="octocat/my-portfolio">
       </label>
       <label>브랜치
         <input id="set-branch" type="text" placeholder="main">
       </label>
       <label>Personal Access Token
-        <input id="set-token" type="password" placeholder="glpat-xxxxxxxxxxxx">
+        <input id="set-token" type="password" placeholder="github_pat_xxxxxxxxxxxx">
       </label>
     </div>
     <div class="admin-actions">

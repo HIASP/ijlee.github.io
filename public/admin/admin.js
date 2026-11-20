@@ -42,7 +42,6 @@
 
   function getSettings() {
     return {
-      base: (document.getElementById("set-base").value || "https://gitlab.com").replace(/\/+$/, ""),
       project: document.getElementById("set-project").value.trim(),
       branch: document.getElementById("set-branch").value.trim() || "main",
       token: document.getElementById("set-token").value.trim()
@@ -55,39 +54,79 @@
     node.className = "admin-status" + (kind ? " " + kind : "");
   }
 
-  /* ---------------- GitLab API ---------------- */
+  /* ---------------- GitHub Contents API ---------------- */
+  // shortcut: each file is PUT individually (no atomic multi-file commit like
+  // GitLab's commits API) — if that's ever needed, move to the Git Data API
+  // (blobs + tree + commit + ref update).
 
-  function apiProjectBase(s) {
-    return s.base + "/api/v4/projects/" + encodeURIComponent(s.project);
+  function apiRepoBase(s) {
+    return "https://api.github.com/repos/" + s.project.split("/").map(encodeURIComponent).join("/");
   }
 
-  function fileExists(s, filePath) {
-    var url = apiProjectBase(s) + "/repository/files/" + encodeURIComponent(filePath) + "?ref=" + encodeURIComponent(s.branch);
-    return fetch(url, { headers: { "PRIVATE-TOKEN": s.token } }).then(function (res) { return res.ok; });
+  function encodePath(filePath) {
+    return filePath.split("/").map(encodeURIComponent).join("/");
   }
 
-  function getRawFile(s, filePath) {
-    var url = apiProjectBase(s) + "/repository/files/" + encodeURIComponent(filePath) + "/raw?ref=" + encodeURIComponent(s.branch);
-    return fetch(url, { headers: { "PRIVATE-TOKEN": s.token } }).then(function (res) {
-      if (!res.ok) throw new Error("불러오기 실패 (" + res.status + ")");
-      return res.text();
+  function ghHeaders(s) {
+    return { "Authorization": "Bearer " + s.token, "Accept": "application/vnd.github+json" };
+  }
+
+  function utf8ToB64(str) {
+    var bytes = new TextEncoder().encode(str);
+    var binary = "";
+    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  }
+
+  function b64ToUtf8(b64) {
+    var binary = atob(b64.replace(/\n/g, ""));
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }
+
+  function getFileMeta(s, filePath) {
+    var url = apiRepoBase(s) + "/contents/" + encodePath(filePath) + "?ref=" + encodeURIComponent(s.branch);
+    return fetch(url, { headers: ghHeaders(s) }).then(function (res) {
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error("조회 실패 (" + res.status + ")");
+      return res.json();
     });
   }
 
-  function commit(s, actions, message) {
-    var url = apiProjectBase(s) + "/repository/commits";
+  function getRawFile(s, filePath) {
+    return getFileMeta(s, filePath).then(function (meta) {
+      if (!meta) throw new Error("파일을 찾을 수 없습니다 (404)");
+      return b64ToUtf8(meta.content);
+    });
+  }
+
+  function putFile(s, filePath, base64Content, message, sha) {
+    var url = apiRepoBase(s) + "/contents/" + encodePath(filePath);
+    var body = { message: message, content: base64Content, branch: s.branch };
+    if (sha) body.sha = sha;
     return fetch(url, {
-      method: "POST",
-      headers: { "PRIVATE-TOKEN": s.token, "Content-Type": "application/json" },
-      body: JSON.stringify({ branch: s.branch, commit_message: message, actions: actions })
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, ghHeaders(s)),
+      body: JSON.stringify(body)
     }).then(function (res) {
       if (!res.ok) {
         return res.json().catch(function () { return {}; }).then(function (body) {
-          throw new Error((body && (body.message || body.error)) || ("커밋 실패 (" + res.status + ")"));
+          throw new Error((body && body.message) || ("커밋 실패 (" + res.status + ")"));
         });
       }
       return res.json();
     });
+  }
+
+  function commitFiles(s, actions, message) {
+    return actions.reduce(function (p, action) {
+      return p.then(function () {
+        return getFileMeta(s, action.filePath).then(function (meta) {
+          return putFile(s, action.filePath, action.base64, message, meta && meta.sha);
+        });
+      });
+    }, Promise.resolve());
   }
 
   function fileToBase64(file) {
@@ -375,7 +414,7 @@
         var filePath = "assets/img/" + baseDir + "/" + slug + "/" + Date.now().toString(36) + "-" + i + "." + extOf(p.file.name);
         imageChecks.push(
           fileToBase64(p.file).then(function (b64) {
-            actions.push({ action: "create", file_path: filePath, encoding: "base64", content: b64 });
+            actions.push({ filePath: filePath, base64: b64 });
             entry.images = entry.images || [];
             entry.images.push(filePath);
           })
@@ -392,9 +431,7 @@
       profilePhotoPromise = fileToBase64(pendingProfilePhoto).then(function (b64) {
         var filePath = "assets/img/profile/me." + extOf(pendingProfilePhoto.name);
         state.profile.photo = filePath;
-        return fileExists(s, filePath).then(function (exists) {
-          actions.push({ action: exists ? "update" : "create", file_path: filePath, encoding: "base64", content: b64 });
-        });
+        actions.push({ filePath: filePath, base64: b64 });
       });
     }
 
@@ -423,20 +460,16 @@
   function saveAll() {
     var s = getSettings();
     if (!s.project || !s.token) {
-      setStatus("save-status", "GitLab 설정(프로젝트 경로, 토큰)을 먼저 입력하고 저장하세요.", "err");
+      setStatus("save-status", "GitHub 설정(저장소, 토큰)을 먼저 입력하고 저장하세요.", "err");
       return;
     }
     setStatus("save-status", "이미지 업로드 준비 중…");
 
-    collectActions(s).then(function (imageActions) {
+    collectActions(s).then(function (actions) {
       var contentJson = buildContentJson();
-      return fileExists(s, CONTENT_PATH).then(function (exists) {
-        var actions = imageActions.concat([
-          { action: exists ? "update" : "create", file_path: CONTENT_PATH, content: contentJson }
-        ]);
-        setStatus("save-status", "커밋하는 중…");
-        return commit(s, actions, "portfolio: 콘텐츠 업데이트 (" + new Date().toISOString() + ")");
-      });
+      actions.push({ filePath: CONTENT_PATH, base64: utf8ToB64(contentJson) });
+      setStatus("save-status", "커밋하는 중…");
+      return commitFiles(s, actions, "portfolio: 콘텐츠 업데이트 (" + new Date().toISOString() + ")");
     }).then(function () {
       setStatus("save-status", "저장 완료. 약 1~2분 뒤 사이트에 반영됩니다.", "ok");
       renderChangelogEditor();
@@ -463,7 +496,6 @@
 
   function init() {
     var saved = loadSettings();
-    document.getElementById("set-base").value = saved.base || "https://gitlab.com";
     document.getElementById("set-project").value = saved.project || "";
     document.getElementById("set-branch").value = saved.branch || "main";
     document.getElementById("set-token").value = saved.token || "";
