@@ -1,0 +1,414 @@
+/* ============================================================
+   Token system
+   ============================================================ */
+:root {
+  --ink:        #0E1420;
+  --panel:      #161E2E;
+  --panel-2:    #1B2538;
+  --line:       #2A3548;
+  --text:       #E8EDF4;
+  --text-muted: #8591A8;
+  --signal:     #4FB8A6;   /* network / fiber signal teal */
+  --signal-dim: #3A8C7F;
+  --flag:       #D9A441;   /* caution amber, used sparingly */
+
+  --font-display: "Space Grotesk", "Pretendard", sans-serif;
+  --font-body:    "IBM Plex Sans KR", "Pretendard", sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, monospace;
+
+  --max-w: 760px;
+  --gutter: 24px;
+  --spine-x: 40px;
+}
+
+@media (min-width: 760px) {
+  :root { --spine-x: 64px; }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2 { font-family: var(--font-display); margin: 0; }
+
+a { color: inherit; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--panel);
+  color: var(--text);
+  padding: 10px 16px;
+  z-index: 100;
+  border: 1px solid var(--line);
+}
+.skip-link:focus { left: var(--gutter); top: 12px; }
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   Structural spine — the one bold device.
+   A single vertical line runs the length of the page; every
+   section grows a short branch off it. Drawn once on load.
+   ============================================================ */
+.spine {
+  position: absolute;
+  top: 0;
+  left: var(--spine-x);
+  width: 2px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+.spine svg { width: 100%; height: 100%; display: block; }
+.spine line {
+  stroke: var(--line);
+  stroke-width: 2;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw-spine 1.4s ease-out 0.15s forwards;
+}
+@keyframes draw-spine {
+  to { stroke-dashoffset: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine line { animation: none; stroke-dashoffset: 0; }
+}
+
+/* ============================================================
+   Topbar
+   ============================================================ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px var(--gutter);
+  padding-left: calc(var(--spine-x) + 20px);
+  background: rgba(14, 20, 32, 0.86);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.topbar-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.topbar-nav { display: flex; gap: 22px; }
+.topbar-nav a {
+  text-decoration: none;
+  font-size: 14px;
+  color: var(--text-muted);
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.topbar-nav a:hover,
+.topbar-nav a:focus-visible { color: var(--signal); border-color: var(--signal); }
+
+/* ============================================================
+   Shared section rhythm
+   ============================================================ */
+main {
+  position: relative;
+  z-index: 1;
+  max-width: calc(var(--max-w) + var(--spine-x) + var(--gutter));
+  margin: 0 auto;
+  padding-left: calc(var(--spine-x) + 20px);
+  padding-right: var(--gutter);
+}
+
+.hero, .block { position: relative; padding: 64px 0 56px; }
+.hero { padding-top: 88px; }
+
+.hero-node, .block-node {
+  position: absolute;
+  left: calc(-1 * (var(--spine-x) + 20px) + (var(--spine-x) - 5px));
+  top: 92px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 2px solid var(--signal);
+}
+.block-node { top: 70px; }
+
+/* branch line connecting spine to node */
+.block::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * (var(--spine-x) + 20px) + var(--spine-x));
+  top: 75px;
+  width: 20px;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.hero-photo img {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  display: block;
+  background: var(--panel);
+}
+.hero-role {
+  margin: 4px 0 2px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--signal);
+}
+.hero-name {
+  font-size: clamp(32px, 5vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+.hero-headline {
+  font-size: clamp(19px, 2.6vw, 23px);
+  line-height: 1.45;
+  max-width: 34ch;
+  margin: 0 0 10px;
+  color: var(--text);
+}
+.hero-subhead {
+  font-size: 15.5px;
+  color: var(--text-muted);
+  max-width: 48ch;
+  margin: 0;
+}
+
+@media (max-width: 560px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-photo img { width: 84px; height: 84px; }
+}
+
+/* ============================================================
+   Section titles
+   ============================================================ */
+.block-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.block-lede {
+  margin: 0 0 32px;
+  color: var(--text-muted);
+  font-size: 14.5px;
+  max-width: 52ch;
+}
+
+/* ============================================================
+   About — spec sheet (config-style key:value)
+   ============================================================ */
+.spec-sheet {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  row-gap: 14px;
+  column-gap: 20px;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.spec-sheet dt {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  padding-top: 2px;
+}
+.spec-sheet dd {
+  margin: 0;
+  font-size: 15px;
+}
+.spec-sheet dd.empty {
+  color: var(--text-muted);
+  font-style: normal;
+}
+@media (max-width: 560px) {
+  .spec-sheet { grid-template-columns: 92px 1fr; }
+}
+
+/* ============================================================
+   Changelog
+   ============================================================ */
+.changelog-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.changelog-entry {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--line);
+}
+.changelog-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.changelog-date {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--signal);
+}
+.changelog-org {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.changelog-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.changelog-summary {
+  margin: 0 0 12px;
+  color: var(--text);
+  font-size: 15px;
+  max-width: 62ch;
+}
+.changelog-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.tag {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+.changelog-images, .skill-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.changelog-images img, .skill-images img {
+  width: 100%;
+  aspect-ratio: 16/10;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  display: block;
+}
+.changelog-empty, .skill-empty {
+  padding: 22px 0;
+  color: var(--text-muted);
+  font-size: 14.5px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ============================================================
+   AI Skill — flat panels, no shadow, varied internal structure
+   ============================================================ */
+.skill-list { display: flex; flex-direction: column; gap: 18px; }
+.skill-panel {
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--signal);
+  background: var(--panel);
+  padding: 22px 24px 24px;
+}
+.skill-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+.skill-title { font-size: 17px; font-weight: 600; margin: 0 0 6px; }
+.skill-summary { margin: 0; color: var(--text-muted); font-size: 14.5px; max-width: 58ch; }
+.skill-toggle {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--signal);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+.skill-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+
+.skill-body {
+  margin-top: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, margin-top 0.3s ease;
+}
+.skill-panel.open .skill-body { margin-top: 18px; }
+
+.skill-modules {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  display: grid;
+  gap: 6px;
+}
+.skill-modules li { padding-left: 16px; position: relative; }
+.skill-modules li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 7px;
+  height: 1px;
+  background: var(--signal-dim);
+}
+.skill-description { font-size: 14.5px; margin: 0 0 16px; max-width: 62ch; }
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  max-width: calc(var(--max-w) + var(--spine-x) + var(--gutter));
+  margin: 0 auto;
+  padding: 40px var(--gutter) 60px;
+  padding-left: calc(var(--spine-x) + 20px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--line);
+}
+.admin-link { color: var(--text-muted); text-decoration: none; }
+.admin-link:hover, .admin-link:focus-visible { color: var(--signal); }

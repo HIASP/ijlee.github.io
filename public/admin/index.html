@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>관리자 — 콘텐츠 편집</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-body">
+
+<header class="admin-topbar">
+  <span class="topbar-name">관리자</span>
+  <a class="admin-back" href="../">사이트로 돌아가기</a>
+</header>
+
+<main class="admin-main">
+
+  <section class="admin-card" id="settings-card">
+    <h2>GitLab 연결 설정</h2>
+    <p class="admin-hint">
+      이 설정은 이 브라우저에만 저장됩니다(서버로 전송되지 않음). Personal Access Token은
+      <code>api</code> 또는 <code>write_repository</code> 스코프가 있어야 커밋이 가능합니다.
+    </p>
+    <div class="admin-grid">
+      <label>GitLab 주소
+        <input id="set-base" type="text" placeholder="https://gitlab.com">
+      </label>
+      <label>프로젝트 경로
+        <input id="set-project" type="text" placeholder="namespace/project-name">
+      </label>
+      <label>브랜치
+        <input id="set-branch" type="text" placeholder="main">
+      </label>
+      <label>Personal Access Token
+        <input id="set-token" type="password" placeholder="glpat-xxxxxxxxxxxx">
+      </label>
+    </div>
+    <div class="admin-actions">
+      <button id="btn-save-settings" class="btn btn-primary" type="button">설정 저장</button>
+      <button id="btn-load-content" class="btn" type="button">저장소에서 불러오기</button>
+      <button id="btn-clear-token" class="btn btn-ghost" type="button">토큰 지우기</button>
+    </div>
+    <p id="settings-status" class="admin-status"></p>
+  </section>
+
+  <section class="admin-card">
+    <h2>About</h2>
+    <div class="admin-grid" id="about-form">
+      <label>이름 <input data-field="name" type="text"></label>
+      <label>생년월일 <input data-field="birth" type="text" placeholder="1990.01.01"></label>
+      <label>주소 <input data-field="address" type="text" placeholder="서울특별시 ○○구"></label>
+      <label>이메일 <input data-field="email" type="email"></label>
+      <label>학력 <input data-field="education" type="text"></label>
+      <label>회사 <input data-field="company" type="text"></label>
+      <label class="span-2">한 줄 이력 <input data-field="bio" type="text" placeholder="예: 2021~ ○○ 보안엔지니어 / 방화벽 정책 자동화 담당"></label>
+    </div>
+  </section>
+
+  <section class="admin-card">
+    <h2>Hero (메인 화면 문구)</h2>
+    <div class="admin-grid" id="profile-form">
+      <label>직함 <input data-field="role" type="text"></label>
+      <label>이름 <input data-field="name" type="text"></label>
+      <label class="span-2">헤드라인 <input data-field="headline" type="text"></label>
+      <label class="span-2">서브 헤드라인 <input data-field="subhead" type="text"></label>
+    </div>
+    <label class="field-block">프로필 사진 교체
+      <input id="profile-photo-input" type="file" accept="image/*">
+    </label>
+    <p class="admin-hint">업로드하면 <code>assets/img/profile/me.jpg</code> 로 저장됩니다.</p>
+  </section>
+
+  <section class="admin-card">
+    <div class="admin-card-head">
+      <h2>Changelog (경력)</h2>
+      <button id="btn-add-changelog" class="btn" type="button">항목 추가</button>
+    </div>
+    <div id="changelog-editor"></div>
+  </section>
+
+  <section class="admin-card">
+    <div class="admin-card-head">
+      <h2>AI Skill</h2>
+      <button id="btn-add-skill" class="btn" type="button">항목 추가</button>
+    </div>
+    <div id="skill-editor"></div>
+  </section>
+
+  <div class="admin-savebar">
+    <span id="save-status" class="admin-status"></span>
+    <button id="btn-copy-json" class="btn btn-ghost" type="button">content.json 복사</button>
+    <button id="btn-save-all" class="btn btn-primary" type="button">변경사항 저장 (커밋)</button>
+  </div>
+
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>
