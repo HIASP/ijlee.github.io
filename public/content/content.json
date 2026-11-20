@@ -1,9 +1,9 @@
 {
   "profile": {
     "name": "이인직",
-    "role": "보안 정책 자동화 엔지니어",
-    "headline": "방화벽 정책을 손으로 만들던 일을, 자동화된 도구로 바꿉니다.",
-    "subhead": "정책 생성, 보안 점검, 변경 이력 관리를 AI와 자동화로 다시 설계합니다.",
+    "role": "Service / Enterprise(In-house) Security Engineer",
+    "headline": "",
+    "subhead": "",
     "photo": "assets/img/profile/me.jpg",
     "photoFallback": "assets/img/profile/placeholder.svg"
   },

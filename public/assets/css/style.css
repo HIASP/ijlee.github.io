@@ -1,16 +1,16 @@
 /* ============================================================
-   Token system
+   Token system — AWS-style dark console: black background, orange accent
    ============================================================ */
 :root {
-  --ink:        #0E1420;
-  --panel:      #161E2E;
-  --panel-2:    #1B2538;
-  --line:       #2A3548;
-  --text:       #E8EDF4;
-  --text-muted: #8591A8;
-  --signal:     #4FB8A6;   /* network / fiber signal teal */
-  --signal-dim: #3A8C7F;
-  --flag:       #D9A441;   /* caution amber, used sparingly */
+  --ink:        #0B0B0C;
+  --panel:      #161616;
+  --panel-2:    #1D1D1D;
+  --line:       #333333;
+  --text:       #ECECEC;
+  --text-muted: #9A9A9A;
+  --signal:     #FF9900;   /* AWS orange accent */
+  --signal-dim: #CC7A00;
+  --flag:       #FF9900;
 
   --font-display: "Space Grotesk", "Pretendard", sans-serif;
   --font-body:    "IBM Plex Sans KR", "Pretendard", sans-serif;
@@ -18,11 +18,6 @@
 
   --max-w: 760px;
   --gutter: 24px;
-  --spine-x: 40px;
-}
-
-@media (min-width: 760px) {
-  :root { --spine-x: 64px; }
 }
 
 * { box-sizing: border-box; }
@@ -64,154 +59,90 @@ a { color: inherit; }
 }
 
 /* ============================================================
-   Structural spine — the one bold device.
-   A single vertical line runs the length of the page; every
-   section grows a short branch off it. Drawn once on load.
+   Site header — centered photo + name + one-line role
    ============================================================ */
-.spine {
-  position: absolute;
-  top: 0;
-  left: var(--spine-x);
-  width: 2px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
+.site-header {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 64px var(--gutter) 40px;
+  text-align: center;
 }
-.spine svg { width: 100%; height: 100%; display: block; }
-.spine line {
-  stroke: var(--line);
-  stroke-width: 2;
-  stroke-dasharray: 100;
-  stroke-dashoffset: 100;
-  animation: draw-spine 1.4s ease-out 0.15s forwards;
+.hero-photo img {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--signal);
+  display: block;
+  margin: 0 auto 22px;
+  background: var(--panel);
 }
-@keyframes draw-spine {
-  to { stroke-dashoffset: 0; }
+.hero-name {
+  font-size: clamp(28px, 5vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
 }
-@media (prefers-reduced-motion: reduce) {
-  .spine line { animation: none; stroke-dashoffset: 0; }
+.hero-role {
+  margin: 0 auto;
+  max-width: 48ch;
+  font-family: var(--font-mono);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--signal);
 }
+.hero-headline, .hero-subhead { display: none; }
 
 /* ============================================================
-   Topbar
+   Main nav — full-width bar under the header divider
    ============================================================ */
-.topbar {
+.main-nav {
   position: sticky;
   top: 0;
   z-index: 10;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px var(--gutter);
-  padding-left: calc(var(--spine-x) + 20px);
-  background: rgba(14, 20, 32, 0.86);
+  justify-content: center;
+  gap: 36px;
+  padding: 16px var(--gutter);
+  background: rgba(11, 11, 12, 0.92);
   backdrop-filter: blur(6px);
+  border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
-.topbar-name {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.01em;
-}
-.topbar-nav { display: flex; gap: 22px; }
-.topbar-nav a {
+.main-nav a {
   text-decoration: none;
+  font-family: var(--font-mono);
   font-size: 14px;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
-  border-bottom: 1px solid transparent;
-  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+  padding-bottom: 4px;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-.topbar-nav a:hover,
-.topbar-nav a:focus-visible { color: var(--signal); border-color: var(--signal); }
+.main-nav a:hover,
+.main-nav a:focus-visible,
+.main-nav a.is-active { color: var(--signal); border-color: var(--signal); }
+
+@media (max-width: 420px) {
+  .main-nav { gap: 16px; padding: 14px 12px; font-size: 12px; }
+  .main-nav a { font-size: 12px; }
+}
 
 /* ============================================================
    Shared section rhythm
    ============================================================ */
 main {
-  position: relative;
-  z-index: 1;
-  max-width: calc(var(--max-w) + var(--spine-x) + var(--gutter));
+  max-width: calc(var(--max-w) + 2 * var(--gutter));
   margin: 0 auto;
-  padding-left: calc(var(--spine-x) + 20px);
-  padding-right: var(--gutter);
+  padding: 0 var(--gutter);
 }
 
-.hero, .block { position: relative; padding: 64px 0 56px; }
-.hero { padding-top: 88px; }
-
-.hero-node, .block-node {
-  position: absolute;
-  left: calc(-1 * (var(--spine-x) + 20px) + (var(--spine-x) - 5px));
-  top: 92px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--ink);
-  border: 2px solid var(--signal);
+.block {
+  padding: 56px 0;
+  border-bottom: 1px solid var(--line);
 }
-.block-node { top: 70px; }
-
-/* branch line connecting spine to node */
-.block::before {
-  content: "";
-  position: absolute;
-  left: calc(-1 * (var(--spine-x) + 20px) + var(--spine-x));
-  top: 75px;
-  width: 20px;
-  height: 1px;
-  background: var(--line);
-}
-
-/* ============================================================
-   Hero
-   ============================================================ */
-.hero {
-  display: grid;
-  grid-template-columns: 112px 1fr;
-  gap: 28px;
-  align-items: start;
-}
-.hero-photo img {
-  width: 112px;
-  height: 112px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--line);
-  display: block;
-  background: var(--panel);
-}
-.hero-role {
-  margin: 4px 0 2px;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  color: var(--signal);
-}
-.hero-name {
-  font-size: clamp(32px, 5vw, 44px);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 14px;
-}
-.hero-headline {
-  font-size: clamp(19px, 2.6vw, 23px);
-  line-height: 1.45;
-  max-width: 34ch;
-  margin: 0 0 10px;
-  color: var(--text);
-}
-.hero-subhead {
-  font-size: 15.5px;
-  color: var(--text-muted);
-  max-width: 48ch;
-  margin: 0;
-}
-
-@media (max-width: 560px) {
-  .hero { grid-template-columns: 1fr; }
-  .hero-photo img { width: 84px; height: 84px; }
-}
+.block:last-child { border-bottom: none; }
+.block.is-hidden { display: none; }
 
 /* ============================================================
    Section titles
@@ -220,6 +151,17 @@ main {
   font-size: 22px;
   font-weight: 600;
   margin-bottom: 6px;
+  position: relative;
+  padding-left: 16px;
+}
+.block-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 5px;
+  width: 8px;
+  height: 8px;
+  background: var(--signal);
 }
 .block-lede {
   margin: 0 0 32px;
@@ -260,7 +202,7 @@ main {
 }
 
 /* ============================================================
-   Changelog
+   Project (changelog)
    ============================================================ */
 .changelog-list {
   list-style: none;
@@ -329,7 +271,7 @@ main {
 }
 
 /* ============================================================
-   AI Skill — flat panels, no shadow, varied internal structure
+   AI Utilization — flat panels, no shadow, varied internal structure
    ============================================================ */
 .skill-list { display: flex; flex-direction: column; gap: 18px; }
 .skill-panel {
@@ -397,12 +339,9 @@ main {
    Footer
    ============================================================ */
 .site-footer {
-  position: relative;
-  z-index: 1;
-  max-width: calc(var(--max-w) + var(--spine-x) + var(--gutter));
+  max-width: calc(var(--max-w) + 2 * var(--gutter));
   margin: 0 auto;
   padding: 40px var(--gutter) 60px;
-  padding-left: calc(var(--spine-x) + 20px);
   display: flex;
   justify-content: space-between;
   align-items: center;

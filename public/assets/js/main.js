@@ -219,6 +219,41 @@
     renderFooter(data.about);
   }
 
+  function initTabs() {
+    var links = document.querySelectorAll(".main-nav a");
+    var blocks = document.querySelectorAll(".block");
+
+    function activate(id) {
+      for (var i = 0; i < blocks.length; i++) {
+        blocks[i].classList.toggle("is-hidden", blocks[i].id !== id);
+      }
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle("is-active", links[j].getAttribute("href") === "#" + id);
+      }
+      // skill panels measure scrollHeight on render; re-measure open ones now
+      // that this block is no longer display:none (hidden blocks measure 0).
+      var openBodies = document.querySelectorAll("#" + id + " .skill-panel.open .skill-body");
+      for (var m = 0; m < openBodies.length; m++) {
+        openBodies[m].style.maxHeight = openBodies[m].scrollHeight + "px";
+      }
+    }
+
+    for (var k = 0; k < links.length; k++) {
+      links[k].addEventListener("click", function (e) {
+        e.preventDefault();
+        var id = this.getAttribute("href").slice(1);
+        activate(id);
+        history.replaceState(null, "", "#" + id);
+      });
+    }
+
+    var initial = (location.hash || "#about").slice(1);
+    if (!document.getElementById(initial)) initial = "about";
+    activate(initial);
+  }
+
+  initTabs();
+
   fetch("content/content.json", { cache: "no-store" })
     .then(function (res) { return res.json(); })
     .then(render)
